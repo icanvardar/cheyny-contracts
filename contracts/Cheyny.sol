@@ -6,41 +6,30 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract CheynyNFT is ERC721URIStorage, Ownable {
+contract Cheyny is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
     mapping(address => bool) public issuers;
 
-    constructor() ERC721("CheynyNFT", "CHEY") {
+    constructor() ERC721("Cheyny", "CHEY") {
         issuers[msg.sender] = true;
     }
-    
-    event ClaimIssuer(address newIssuer);
-    event DisclaimIssuer(address newIssuer);
 
     modifier onlyIssuer() {
-        bool isIssuerVal = isIssuer(msg.sender);
-        require(isIssuerVal == true, "You have to be issuer.");
+        require(issuers[msg.sender] == true, "onlyIssuer: You are not issuer!");
         _;
-    }
-
-    function isIssuer(address issuer) public view returns (bool) {
-        if (!issuers[issuer] == false) return false;
-        return true;
     }
 
     function claimIssuer(address newIssuer) public onlyOwner {
         issuers[newIssuer] = true;
-        emit ClaimIssuer(newIssuer);
     }
 
-    function disclaimIssuer(address newIssuer) public onlyOwner {
-        issuers[newIssuer] = false;
-        emit DisclaimIssuer(newIssuer);
+    function disclaimIssuer(address issuer) public onlyOwner {
+        issuers[issuer] = false;
     }
 
-    function awardItem(address player, string memory tokenURI)
+    function mintItem(address issuer, string memory tokenURI)
         public
         onlyIssuer
         returns (uint256)
@@ -48,7 +37,7 @@ contract CheynyNFT is ERC721URIStorage, Ownable {
         _tokenIds.increment();
 
         uint256 newItemId = _tokenIds.current();
-        _mint(player, newItemId);
+        _mint(issuer, newItemId);
         _setTokenURI(newItemId, tokenURI);
 
         return newItemId;
