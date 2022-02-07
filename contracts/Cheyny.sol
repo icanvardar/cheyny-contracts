@@ -1,4 +1,3 @@
-// contracts/GameItem.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -12,6 +11,10 @@ contract Cheyny is ERC721URIStorage, Ownable {
 
     mapping(address => bool) public issuers;
 
+    event MintItem(uint256 tokenId, address issuer, string tokenURI);
+    event ClaimIssuer(address newIssuer);
+    event DisclaimIssuer(address issuer);
+
     constructor() ERC721("Cheyny", "CHEY") {
         issuers[msg.sender] = true;
     }
@@ -23,10 +26,12 @@ contract Cheyny is ERC721URIStorage, Ownable {
 
     function claimIssuer(address newIssuer) public onlyOwner {
         issuers[newIssuer] = true;
+        emit ClaimIssuer(newIssuer);
     }
 
     function disclaimIssuer(address issuer) public onlyOwner {
         issuers[issuer] = false;
+        emit DisclaimIssuer(issuer);
     }
 
     function mintItem(address issuer, string memory tokenURI)
@@ -40,6 +45,7 @@ contract Cheyny is ERC721URIStorage, Ownable {
         _mint(issuer, newItemId);
         _setTokenURI(newItemId, tokenURI);
 
+        emit MintItem(newItemId, issuer, tokenURI);
         return newItemId;
     }
 }
